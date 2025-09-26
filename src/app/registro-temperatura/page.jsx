@@ -1,16 +1,41 @@
 "use client";
 import { useTemperature } from "@/hooks/useTemperature";
-import { Box, Button, Modal, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Modal,
+  TextField,
+} from "@mui/material";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import TimeAgo from "javascript-time-ago";
+import es from "javascript-time-ago/locale/es";
 
 export default function RegistroTemperatura() {
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const { postCreateTemperature, getTemperatures, DataList } = useTemperature();
+  TimeAgo.addLocale(es);
+
+  const timeAgo = new TimeAgo("es-CO");
+
+  const {
+    postCreateTemperature,
+    getTemperatures,
+    DataList,
+    deleteDeleteTemperature,
+  } = useTemperature();
 
   useEffect(() => {
     getTemperatures();
@@ -27,6 +52,7 @@ export default function RegistroTemperatura() {
       data.temperature = parseFloat(data?.temperature);
       console.log(data);
       const result = await postCreateTemperature(data);
+      setOpen(false);
       await getTemperatures();
       console.log(result);
     } catch (error) {}
@@ -55,7 +81,12 @@ export default function RegistroTemperatura() {
           </Button>
         </div>
 
-        <div className="flex  w-full md:w-1/2 md:mx-auto flex-col items-start md:items-center mt-5">
+        <div className="text-center mt-12">
+          {!DataList && (
+            <CircularProgress sx={{ color: "oklch(55.3% 0.195 38.402)" }} />
+          )}
+        </div>
+        <div className="flex  w-full md:w-1/2 md:mx-auto flex-col items-start md:items-center mt-5 py-2 h-[81vh] overflow-x-visible overflow-y-auto">
           {DataList &&
             DataList.map((temp) => (
               <div key={temp._id} className="group flex gap-x-6">
@@ -66,15 +97,26 @@ export default function RegistroTemperatura() {
                   </span>
                 </div>
                 <div className="-translate-y-1.5 pb-4 text-slate-600">
-                  <p className="font-sans text-base font-bold text-slate-800 antialiased dark:text-white">
-                    {temp?.temperature}
-                  </p>
-                  <div className="flex  justify-between w-[200px] items-end">
+                  <div className="flex justify-between">
+                    <p className="font-sans text-base font-bold text-slate-800 antialiased dark:text-white">
+                      {temp?.temperature} °C
+                    </p>
+                    <IconButton
+                      size="small"
+                      aria-label="delete"
+                      onClick={() => {
+                        setOpenDelete({ bool: true, data: temp });
+                      }}
+                    >
+                      <i className="fa-solid fa-trash-can"></i>
+                    </IconButton>
+                  </div>
+                  <div className="flex  justify-between w-[250px] md:w-[400px] items-end">
                     <small className="mt-2 font-sans text-sm text-slate-600 antialiased">
                       {new Date(temp?.createdTime).toLocaleDateString()} -{" "}
                       {new Date(temp?.createdTime).toLocaleTimeString()}
                     </small>
-                    <small>test</small>
+                    <small>{timeAgo.format(temp?.createdTime)}</small>
                   </div>
                 </div>
               </div>
@@ -82,6 +124,54 @@ export default function RegistroTemperatura() {
         </div>
       </div>
 
+      <Dialog
+        open={openDelete?.bool}
+        onClose={() => {
+          setOpenDelete(null);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Seguro quiere eliminar el registro de temperatura?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            <span>Temperatura : {openDelete?.data?.temperature}</span>
+            <span className="block">
+              Fecha :{" "}
+              {new Date(openDelete?.data?.createdTime).toLocaleDateString()} -{" "}
+              {new Date(openDelete?.data?.createdTime).toLocaleTimeString()}
+            </span>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => setOpenDelete(null)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={async () => {
+              try {
+                console.log(openDelete.data._id);
+                await deleteDeleteTemperature(openDelete.data._id);
+                setOpenDelete(null);
+                await getTemperatures();
+              } catch (error) {
+                console.log(error);
+              }
+            }}
+            autoFocus
+          >
+            Borrar
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Modal
         open={open}
         onClose={handleClose}

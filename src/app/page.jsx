@@ -27,7 +27,7 @@ export default function Home() {
               backgroundColor: "oklch(51.8% 0.253 323.949)",
             }}
           >
-            <i class="fa-solid fa-toilet fa-2xl"></i>Registro Popis
+            <i className="fa-solid fa-toilet fa-2xl"></i>Registro Popis
           </Button>
         </Link>
         <Button variant="contained">Contained</Button>

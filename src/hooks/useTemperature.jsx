@@ -2,16 +2,16 @@ import axios from "axios";
 import { useState } from "react";
 
 export const useTemperature = () => {
-
-    const [DataList, setDataList] = useState(null)
+  const [DataList, setDataList] = useState(null);
 
   const getTemperatures = async (data) => {
-
     try {
-        const resutl = await axios.get("/api/temperature");
-        setDataList(resutl.data)
+      setDataList(null);
+      const resutl = await axios.get("/api/temperature");
+      setDataList(resutl.data);
     } catch (error) {
-        
+      console.log(error);
+      return [];
     }
   };
   const postCreateTemperature = async (data) => {
@@ -19,9 +19,15 @@ export const useTemperature = () => {
     return axios.post("/api/temperature", data);
   };
 
+  const deleteDeleteTemperature = async (id) => {
+    //fetch("/api/temperature",)
+    return axios.delete(`/api/temperature/${id}`);
+  };
+
   return {
     postCreateTemperature,
     getTemperatures,
-    DataList
+    DataList,
+    deleteDeleteTemperature,
   };
 };

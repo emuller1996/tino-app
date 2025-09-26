@@ -19,3 +19,15 @@ export async function POST(requets) {
     return NextResponse.json(error);
   }
 }
+
+
+export async function DELETE(requets,params) {
+  try {
+    let data = await requets.json();
+    console.log(params);
+    //const els_request = await crearElasticByType(data, "temperature");
+    return NextResponse.json({ message: "DELETE" });
+  } catch (error) {
+    return NextResponse.json(error);
+  }
+}
