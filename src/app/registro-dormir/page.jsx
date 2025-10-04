@@ -8,15 +8,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  IconButton,
   Modal,
-  TextField,
 } from "@mui/material";
-import TimeAgo from "javascript-time-ago";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import es from "javascript-time-ago/locale/es";
+import FormNap from "./components/FormNap";
+import ItemsNap from "./components/ItemsNap";
 
 export default function RegistroDormir() {
   const [open, setOpen] = useState(false);
@@ -26,42 +24,10 @@ export default function RegistroDormir() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  TimeAgo.addLocale(es);
-
-  const timeAgo = new TimeAgo("es-CO");
-
-  const { getNap, postCreateNap, DataList, deleteDeleteNap } = useNap();
-
-  const {
-    register,
-    handleSubmit,
-    //watch,
-    formState: { errors },
-  } = useForm();
-
-  const onSubmit = async (data) => {
-    if (data.end_date === "") {
-      data.end_date = null;
-    }
-    console.log(data);
-    console.log(openUpdate);
-
-    if (openUpdate) {
-      console.log("update");
-    } else {
-      console.log("crear");
-    }
-    /* try {
-      await postCreateNap(data);
-      await getNap();
-    } catch (error) {
-      console.log(error);
-    } */
-  };
-
+  const { getNap, DataList, deleteDeleteNap } = useNap();
   useEffect(() => {
     getNap();
-  }, []);
+  }, [open]);
 
   return (
     <div>
@@ -98,63 +64,13 @@ export default function RegistroDormir() {
         <div className="flex  w-full md:w-1/2 md:mx-auto flex-col items-start md:items-center mt-5 py-2 h-[81vh] overflow-x-visible overflow-y-auto">
           {DataList &&
             DataList.map((temp) => (
-              <div key={temp._id} className="group flex gap-x-6">
-                <div className="relative">
-                  <div className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 bg-sky-300"></div>
-                  <span className="relative z-10 grid h-10 w-10 place-items-center rounded-full bg-sky-100 text-sky-700">
-                    <i className="fa-solid fa-bed"></i>
-                  </span>
-                </div>
-                <div className="-translate-y-1.5 pb-4 text-slate-600">
-                  <div className="flex justify-between">
-                    <p className="font-sans text-base font-bold text-sky-800 antialiased dark:text-white">
-                      Registro de Siesta
-                    </p>
-                    <div>
-                      <IconButton
-                        size="small"
-                        aria-label="Editar"
-                        title="Editar"
-                        onClick={() => {
-                          setOpen(true);
-                          setOpenUpdate(temp);
-                        }}
-                      >
-                        <i className="fa-solid fa-pen-to-square"></i>
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        aria-label="delete"
-                        onClick={() => {
-                          setOpenDelete({ bool: true, data: temp });
-                        }}
-                      >
-                        <i className="fa-solid fa-trash-can"></i>
-                      </IconButton>
-                    </div>
-                  </div>
-                  <div className=" w-[250px] md:w-[400px]">
-                    <div className="flex  justify-between items-end">
-                      <span className="font-semibold text-sky-900">Incio</span>
-                      <small className="mt-2 font-sans text-sm text-slate-600 antialiased">
-                        {new Date(temp?.start_date).toLocaleDateString()} -{" "}
-                        {new Date(temp?.start_date).toLocaleTimeString()}
-                      </small>
-                      <small>
-                        {timeAgo.format(new Date(temp?.start_date).getTime())}
-                      </small>
-                    </div>
-                    <div className="flex  justify-between items-end">
-                      <span className="font-semibold text-sky-900">Fin</span>
-                      <small className="mt-2 font-sans text-sm text-slate-600 antialiased">
-                        {new Date(temp?.createdTime).toLocaleDateString()} -{" "}
-                        {new Date(temp?.createdTime).toLocaleTimeString()}
-                      </small>
-                      <small>{timeAgo.format(temp?.createdTime)}</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ItemsNap
+                key={temp._id}
+                Nap={temp}
+                setOpen={setOpen}
+                setOpenDelete={setOpenDelete}
+                setOpenUpdate={setOpenUpdate}
+              />
             ))}
         </div>
       </div>
@@ -182,61 +98,11 @@ export default function RegistroDormir() {
           <p className="mb-4 text-center font-semibold text-orange-800">
             Registro de Siesta
           </p>
-
-          <form className="mx-12" onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-9">
-              <TextField
-                id="outlined-basic"
-                label="Fecha y Hora de Inicio"
-                variant="outlined"
-                type="datetime-local"
-                focused
-                fullWidth
-                defaultValue={
-                  openUpdate?.start_date?.slice(0, 16)
-                }
-                {...register("start_date", { required: true })}
-              />
-            </div>
-            <div className="mb-9">
-              <TextField
-                id="outlined-basic"
-                label="Fecha y Hora de Fin"
-                variant="outlined"
-                type="datetime-local"
-                focused
-                fullWidth
-                {...register("end_date")}
-              />
-            </div>
-            <div className="mb-9">
-              <TextField
-                id="note"
-                label="Nota"
-                variant="outlined"
-                multiline
-                {...register("note")}
-                rows={4}
-                fullWidth
-              />
-            </div>
-            <div className="flex justify-center gap-3 text-center">
-              <Button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  setOpenUpdate(false);
-                }}
-                variant="contained"
-                color="error"
-              >
-                <i class="fa-solid fa-ban  me-2"></i>Cancelar
-              </Button>
-              <Button type="submit" variant="contained">
-                <i className="fa-solid fa-floppy-disk me-2"></i>Guardar
-              </Button>
-            </div>
-          </form>
+          <FormNap
+            Nap={openUpdate}
+            setOpen={setOpen}
+            setOpenUpdate={setOpenUpdate}
+          />
         </div>
       </Modal>
 

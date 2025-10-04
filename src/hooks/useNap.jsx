@@ -18,6 +18,10 @@ export const useNap = () => {
     return axios.post("/api/nap", data);
   };
 
+  const patchUpdateNap = async (data,id) => {
+    return axios.patch(`/api/nap/${id}`, data);
+  };
+
   const deleteDeleteNap = async (id) => {
     return axios.delete(`/api/nap/${id}`);
   };
@@ -27,5 +31,6 @@ export const useNap = () => {
     getNap,
     DataList,
     deleteDeleteNap,
+    patchUpdateNap
   };
 };
